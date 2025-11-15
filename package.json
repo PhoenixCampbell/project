@@ -1,0 +1,18 @@
+{
+  "name": "projects-faculty2class_match",
+  "version": "1.0.0",
+  "description": "A lightweight **Bootstrap 5** web application built by Dakota State University’s CSC 470 Software Engineering team.  \r The goal is to provide a simple, intuitive interface where **faculty can rate their course preferences** (0–4) and administrators can later process those preferences with a scheduling solver.",
+  "main": "script.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "node-fetch": "^3.3.2",
+    "type": "module"
+  }
+}

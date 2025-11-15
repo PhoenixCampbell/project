@@ -1,0 +1,25 @@
+/* ===========================
+   DSU Faculty–Class Match Styles
+   =========================== */
+
+/* Hero section */
+.hero {
+  background: linear-gradient(90deg, #0d6efd 0%, #0a58ca 100%);
+  color: #fff;
+}
+
+/* Feature icons */
+.feature-icon {
+  font-size: 2.5rem;
+  color: #0d6efd;
+}
+
+/* Smooth scrolling for navbar links */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Footer */
+footer {
+  color: #6c757d;
+}
