@@ -1,0 +1,5 @@
+timestamp,facultyId,termCode,termLabel,classId,classLabel,rating,desireRating
+2025-11-23 12:05:11,Phoenix.Campbell@dsu.edu,202510,Spring 2025,GAME 351-D01,GAME 351-D01 - Business of Game Development,4,4
+2025-11-23 12:05:21,Phoenix.Campbell@dsu.edu,202510,Spring 2025,CSC 285-D02,CSC 285-D02 - Networking I,3,2
+2025-11-23 12:05:29,Phoenix.Campbell@dsu.edu,202510,Spring 2025,CSC 250-DT2,CSC 250-DT2 - Computer Science II,1,1
+2025-11-23 12:05:37,Phoenix.Campbell@dsu.edu,202510,Spring 2025,CSC 404-D01,CSC 404-D01 - Foundation of Computation,1,4

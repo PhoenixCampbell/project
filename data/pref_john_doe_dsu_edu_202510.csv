@@ -1,0 +1,4 @@
+timestamp,facultyId,termCode,termLabel,classId,classLabel,rating,desireRating
+2025-11-23 11:54:11,john.doe@dsu.edu,202510,Spring 2025,ACCT 311-D01,ACCT 311-D01 - Intermediate Accounting II,1,2
+2025-11-23 11:54:20,john.doe@dsu.edu,202510,Spring 2025,ACCT 475-DT1,ACCT 475-DT1 - Data Analytics for Accountants,3,2
+2025-11-23 11:54:29,john.doe@dsu.edu,202510,Spring 2025,ARTD 350-D01,ARTD 350-D01 - Background Design/Character Design,1,3

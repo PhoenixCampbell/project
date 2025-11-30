@@ -1,0 +1,8 @@
+timestamp,facultyId,termCode,termLabel,classId,classLabel,rating,desireRating
+2025-11-23 12:05:47,Phoenix.Campbell@dsu.edu,202680,Fall 2026,ART 111-D01,ART 111-D01 - Drawing I,4,3
+2025-11-23 12:05:54,Phoenix.Campbell@dsu.edu,202680,Fall 2026,ARTD 480-D01,ARTD 480-D01 - Digital Photography III,2,3
+2025-11-23 12:06:01,Phoenix.Campbell@dsu.edu,202680,Fall 2026,BADM 310-DT1,BADM 310-DT1 - Business Finance,3,0
+2025-11-23 12:06:09,Phoenix.Campbell@dsu.edu,202680,Fall 2026,CMST 101-DT2,CMST 101-DT2 - Foundations of Communication,4,4
+2025-11-23 12:06:17,Phoenix.Campbell@dsu.edu,202680,Fall 2026,CSC 150-DT2,CSC 150-DT2 - Computer Science I,2,4
+2025-11-23 12:06:25,Phoenix.Campbell@dsu.edu,202680,Fall 2026,CSC 285-D01,CSC 285-D01 - Networking I,4,3
+2025-11-23 12:06:34,Phoenix.Campbell@dsu.edu,202680,Fall 2026,CSC 388-D01,CSC 388-D01 - Computer Forensics Fundamentals,0,4
