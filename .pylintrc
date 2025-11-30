@@ -1,0 +1,25 @@
+[MESSAGES CONTROL]
+disable=
+    missing-docstring,
+    invalid-name,
+    too-few-public-methods,
+    too-many-arguments
+
+enable=
+    unused-import,
+    unused-variable,
+    bare-except,
+    duplicate-key
+
+[FORMAT]
+max-line-length=120
+
+[MASTER]
+ignore=venv,node_modules
+
+[REPORTS]
+output-format=colorized
+
+[DESIGN]
+; Allow commonly-used short variable names
+good-names=i,j,k,_,ex,id

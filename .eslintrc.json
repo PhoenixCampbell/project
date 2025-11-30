@@ -1,0 +1,31 @@
+{
+  "extends": ["eslint:recommended"],
+  "plugins": ["html", "jsonc"],
+  "parserOptions": {
+    "ecmaVersion": 2020,
+    "sourceType": "module"
+  },
+  "overrides": [
+    {
+      "files": ["*.json"],
+      "parser": "jsonc-eslint-parser",
+      "rules": {
+        "jsonc/indent": ["error", 2],
+        "jsonc/no-dupe-keys": "error",
+        "jsonc/object-curly-spacing": ["error", "always"],
+        "jsonc/array-bracket-spacing": ["error", "never"]
+      }
+    }
+  ],
+  "rules": {
+    "no-unused-vars": ["warn", { "vars": "all", "args": "after-used", "ignoreRestSiblings": false }],
+    "no-undef": "warn",
+    "quotes": ["error", "double", { "avoidEscape": true, "allowTemplateLiterals": true }],
+    "semi": ["error", "always"],
+    "space-before-function-paren": ["error", "never"],
+    // "indent": ["error", 2, { "SwitchCase": 1 }],
+    "object-curly-spacing": ["error", "always"],
+    "array-bracket-spacing": ["error", "never"],
+    "key-spacing": ["error", { "beforeColon": false, "afterColon": true }]
+  }
+}
