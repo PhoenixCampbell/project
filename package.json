@@ -3,8 +3,11 @@
   "version": "1.0.0",
   "description": "A lightweight **Bootstrap 5** web application built by Dakota State University’s CSC 470 Software Engineering team.  \r The goal is to provide a simple, intuitive interface where **faculty can rate their course preferences** (0–4) and administrators can later process those preferences with a scheduling solver.",
   "main": "script.js",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint './**/*.{js,json}' --ignore-path .eslintignore",
+    "lint:fix": "eslint './**/*.{js,json}' --fix --ignore-path .eslintignore"
   },
   "keywords": [],
   "author": "",
@@ -12,7 +15,17 @@
   "dependencies": {
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
-    "node-fetch": "^3.3.2",
-    "type": "module"
+    "node-fetch": "^3.3.2"
+  },
+  "devDependencies": {
+    "eslint": "^8.56.0",
+    "eslint-config-standard": "^17.1.0",
+    "eslint-plugin-html": "^8.1.3",
+    "eslint-plugin-import": "^2.30.0",
+    "eslint-plugin-jsonc": "^2.21.0",
+    "eslint-plugin-n": "^16.0.0",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^6.0.0",
+    "jsonc-eslint-parser": "^2.4.1"
   }
 }

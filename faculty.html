@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<title>Faculty-Class Match - Faculty Freferences</title>
+		<meta name-"viewport" content="width=device-width, initial-scale=1">
+		<!--Bootstrap CSS-->
+		<link
+			href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+			rel="stylesheet"
+		/>
+		<!--custom CSS-->
+		<link href="css/styles.css" rel="stylesheet" />
+	</head>
+	<body>
+		<header>
+			<!--shared nav across pages for stylied cohesion-->
+			<!--orginally taken from index.html-->
+			<nav
+				class="navbar navbar-expand-lg bg-body-tertiary border-bottom sticky-top"
+			>
+				<div class="container">
+					<a class="navbar-brand fw-bold text-primary" href="#"
+						>DSU Faculty–Class Match</a
+					>
+					<button
+						class="navbar-toggler"
+						type="button"
+						data-bs-toggle="collapse"
+						data-bs-target="#navbarNav"
+					>
+						<span class="navbar-toggler-icon"></span>
+					</button>
+					<div id="navbarNav" class="collapse navbar-collapse">
+						<ul class="navbar-nav ms-auto">
+							<li class="nav-item">
+								<a class="nav-link" href="#how">How It Works</a>
+							</li>
+							<li class="nav-item">
+								<a class="nav-link" href="#features"
+									>Features</a
+								>
+							</li>
+							<li class="nav-item">
+								<a
+									class="btn btn-primary ms-lg-3"
+									href="#get-started"
+									>Get Started</a
+								>
+							</li>
+						</ul>
+					</div>
+				</div>
+			</nav>
+		</header>
+		<main class="container">
+			<h1 class="h3 mb-4">Submit Course Preferences</h1>
+			<p class="text-muted mb-4">
+				Select the term and then a class offered in selected term.
+			</p>
+			<!--faculty email input-->
+			<div class="mb-3 mt-4">
+				<label for="facultyId" class="form-label fw-semibold">
+					Faculty ID / Email
+				</label>
+				<input
+					type="text"
+					id="facultyId"
+					class="form-control"
+					placeholder="e.g. professor@dsu.edu"
+				/>
+				<div class="form-text">
+					Used to identify your specific preferences for this term.
+				</div>
+			</div>
+			<!--term Selection-->
+			<div class="mb-3">
+				<label for="termSelect" class="form-label fw-semibold"
+					>1. Select Semester / Term</label
+				>
+				<select id="termSelect" class="form-select">
+					<option value="">-- Choose a term --</option>
+					<option value="202510">Spring 2025 (202510)</option>
+					<option value="202550">Summer 2025 (202550)</option>
+					<option value="202580">Fall 2025 (202580)</option>
+					<option value="202610">Spring 2026 (202610)</option>
+					<option value="202650">Summer 2026 (202650)</option>
+					<option value="202680">Fall 2026 (202680)</option>
+					<!--pulled from .json file provided for DSU Fall 2025-->
+				</select>
+				<div id="termHelp" class="form-text">
+					You must choose a term before selecing a class.
+				</div>
+			</div>
+			<!--class Selection-->
+			<div class="mb-3">
+				<label for="classSelect" class="form-label fw-semibold"
+					>2. Select Class Offered</label
+				>
+				<select id="classSelect" class="form-select" disabled>
+					<option value="">-- Choose a term first--</option>
+				</select>
+
+				<div id="classHelp" class="form-text">
+					This list is populated from the official schedule JSON for
+					the selected term.
+				</div>
+			</div>
+			<!--comfortability rating-->
+			<div class="mt-4 mb-3">
+				<label class="form-label fw-semibold"
+					>3. Select Comfort Level (0-4)</label
+				>
+				<div id="comfortRatingHelp" class="form-text mb-2">
+					Choose a class above to enable rating. 0 = do not understand
+					course material <--> 4 = very comfortable with course
+					material
+				</div>
+
+				<fieldset id="comfortRatingFieldset" disabled>
+					<div class="form-check form-check-inline">
+						<input
+							class="form-check-input"
+							type="radio"
+							name="comfortLevel"
+							id="comfort0"
+							value="0"
+						/>
+						<label class="form-check-label" for="comfort0">0</label>
+					</div>
+					<div class="form-check form-check-inline">
+						<input
+							class="form-check-input"
+							type="radio"
+							name="comfortLevel"
+							id="comfort1"
+							value="1"
+						/>
+						<label class="form-check-label" for="comfort1">1</label>
+					</div>
+					<div class="form-check form-check-inline">
+						<input
+							class="form-check-input"
+							type="radio"
+							name="comfortLevel"
+							id="comfort2"
+							value="2"
+						/>
+						<label class="form-check-label" for="comfort2">2</label>
+					</div>
+					<div class="form-check form-check-inline">
+						<input
+							class="form-check-input"
+							type="radio"
+							name="comfortLevel"
+							id="comfort3"
+							value="3"
+						/>
+						<label class="form-check-label" for="comfort3">3</label>
+					</div>
+					<div class="form-check form-check-inline">
+						<input
+							class="form-check-input"
+							type="radio"
+							name="comfortLevel"
+							id="comfort4"
+							value="4"
+						/>
+						<label class="form-check-label" for="comfort4">4</label>
+					</div>
+				</fieldset>
+
+				<p id="comfortRatingSummary" class="form-text text-muted mt-2">
+					Select a class to rate your comfort level.
+				</p>
+			</div>
+			<!--desireability rating-->
+			<div class="mt-4 mb-3">
+				<label class="form-label fw-semibold"
+					>4. Select Desirability Level (0-4)</label
+				>
+				<div class="form-text mb-2">
+					Choose a class above to enable rating. 0 = do not want to
+					teach <--> 4 = strongly prefer to teach
+				</div>
+
+				<fieldset id="desireRatingFieldset" disabled>
+					<div class="form-check form-check-inline">
+						<input
+							class="form-check-input"
+							type="radio"
+							name="wantLevel"
+							id="want0"
+							value="0"
+						/>
+						<label class="form-check-label" for="want0">0</label>
+					</div>
+					<div class="form-check form-check-inline">
+						<input
+							class="form-check-input"
+							type="radio"
+							name="wantLevel"
+							id="want1"
+							value="1"
+						/>
+						<label class="form-check-label" for="want1">1</label>
+					</div>
+					<div class="form-check form-check-inline">
+						<input
+							class="form-check-input"
+							type="radio"
+							name="wantLevel"
+							id="want2"
+							value="2"
+						/>
+						<label class="form-check-label" for="want2">2</label>
+					</div>
+					<div class="form-check form-check-inline">
+						<input
+							class="form-check-input"
+							type="radio"
+							name="wantLevel"
+							id="want3"
+							value="3"
+						/>
+						<label class="form-check-label" for="want3">3</label>
+					</div>
+					<div class="form-check form-check-inline">
+						<input
+							class="form-check-input"
+							type="radio"
+							name="wantLevel"
+							id="want4"
+							value="4"
+						/>
+						<label class="form-check-label" for="want4">4</label>
+					</div>
+				</fieldset>
+
+				<p id="desireRatingSummary" class="form-text text-muted mt-2">
+					Select a class to rate your level of inclination.
+				</p>
+			</div>
+			<!--Save & Submit-->
+			<div class="mt-3">
+				<button
+					id="savePreferenceBtn"
+					class="btn btn-secondary"
+					disabled
+				>
+					Save &amp; Submit
+				</button>
+				<div id="saveMessage" class="mt-2 small"></div>
+			</div>
+		</main>
+		<!-- Footer (shared across pages)-->
+		<footer
+			class="text-center text-muted small py-3 bg-body-tertiary border-top"
+		>
+			<div class="container">
+				© 2025 Dakota State University · Built by CSC470 Software
+				Engineering Team under Professor Jared Soundy
+			</div>
+		</footer>
+		<!-- Bootstrap JS -->
+		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+		<!--Script for JSON->Term/class dropdowns-->
+		<script>
+			const termSelect = document.getElementById("termSelect");
+			const classSelect = document.getElementById("classSelect");
+
+			const facultyIdInput = document.getElementById("facultyId");
+
+			const comfortRatingFieldset = document.getElementById(
+				"comfortRatingFieldset"
+			);
+			const comfortRatingSummary = document.getElementById(
+				"comfortRatingSummary"
+			);
+			const comfortRatingRadios = document.querySelectorAll(
+				'input[name="comfortLevel"]'
+			);
+
+			const desireRatingFieldset = document.getElementById(
+				"desireRatingFieldset"
+			);
+			const desireRatingSummary = document.getElementById(
+				"desireRatingSummary"
+			);
+			const desireRatingRadios = document.querySelectorAll(
+				'input[name="wantLevel"]'
+			);
+
+			const submitPreferenceBtn =
+				document.getElementById("savePreferenceBtn");
+			const saveMessage = document.getElementById("saveMessage");
+
+			// All classes loaded from the JSON cache to prevent refetching
+			let termToClassesCache = {};
+
+			// map codes so they can be read easier
+			const termLabels = {
+				202510: "Spring 2025",
+				202550: "Summer 2025",
+				202580: "Fall 2025",
+				202610: "Spring 2026",
+				202650: "Summer 2026",
+				202680: "Fall 2026",
+			};
+
+			// track preference
+			const currentPreference = {
+				facultyId: null,
+				termCode: null,
+				termLabel: null,
+				classId: null,
+				classLabel: null,
+				comfortRating: null,
+				desireRating: null,
+			};
+
+			// helper to clear and reset the class dropdown
+			function resetClassSelect(message) {
+				classSelect.innerHTML = "";
+				const placeholder = document.createElement("option");
+				placeholder.value = "";
+				placeholder.textContent = message;
+				classSelect.appendChild(placeholder);
+				classSelect.value = "";
+			}
+
+			function resetRatingControls() {
+				//clear radio buttons
+				comfortRatingRadios.forEach((r) => {
+					r.checked = false;
+				});
+				desireRatingRadios.forEach((r) => {
+					r.checked = false;
+				});
+
+				currentPreference.comfortRating = null;
+				currentPreference.desireRating = null;
+
+				comfortRatingFieldset.disabled = true;
+				desireRatingFieldset.disabled = true;
+
+				comfortRatingSummary.textContent =
+					"Select a class to rate your comfort and desire level.";
+				submitPreferenceBtn.disabled = true;
+				saveMessage.textContent = "";
+				saveMessage.className = "mt-2 small";
+			}
+
+			function updateFacultyId() {
+				currentPreference.facultyId =
+					facultyIdInput.value.trim() || null;
+				updateSubmitButtonState();
+			}
+
+			function updateSubmitButtonState() {
+				const canSubmit =
+					currentPreference.facultyId &&
+					currentPreference.termCode &&
+					currentPreference.classId &&
+					Number.isInteger(currentPreference.comfortRating) &&
+					Number.isInteger(currentPreference.desireRating);
+
+				submitPreferenceBtn.disabled = !canSubmit;
+			}
+
+			async function loadClassesForTerm(termCode) {
+				//if preloaded, take from cache
+				if (termToClassesCache[termCode]) {
+					return termToClassesCache[termCode];
+				}
+
+				// REAL API - works once CORS is fixed through bim.inclass.today
+				// const url = `https://bim.inclass.today/data/${termCode}tiny.json`;
+				// TODO When in production, on DSU servers, switch these urls for a better grab and better data
+				// ! TEMP LOCAL VERSION to prove working, no CORS issues
+				const url = `data/${termCode}tiny.json`;
+
+				const resp = await fetch(url);
+				if (!resp.ok) {
+					throw new Error(
+						`Failed to fetch classes for term ${termCode}: HTTP ${resp.status}`
+					);
+				}
+				const data = await resp.json();
+				//DEBUG console.log("RAW JSON for term", termCode, data);
+
+				const classes = Array.isArray(data.classes)
+					? data.classes
+					: null;
+
+				if (!classes) {
+					console.error("Unexpected JSON shape:", data);
+					throw new Error(
+						"Unexpected JSON format: could not find 'classes' array"
+					);
+				}
+
+				termToClassesCache[termCode] = classes;
+				return classes;
+			}
+
+			facultyIdInput.addEventListener("input", () => {
+				updateFacultyId();
+			});
+
+			//when term changes, update list of classes
+			termSelect.addEventListener("change", async () => {
+				const selectedTerm = termSelect.value;
+				currentPreference.termCode = selectedTerm || null;
+				currentPreference.termLabel = selectedTerm
+					? termLabels[selectedTerm] || selectedTerm
+					: null;
+
+				//clear class and rating with term change
+				currentPreference.classId = null;
+				currentPreference.classLabel = null;
+				resetRatingControls();
+				updateSubmitButtonState();
+
+				if (!selectedTerm) {
+					classSelect.disabled = true;
+					resetClassSelect("-- Choose a term first --");
+					return;
+				}
+
+				//show loading
+				classSelect.disabled = true;
+				resetClassSelect("-- Loading classes for term... --");
+
+				try {
+					const classes = await loadClassesForTerm(selectedTerm);
+
+					if (!classes || classes.length === 0) {
+						classSelect.disabled = true;
+						resetClassSelect(
+							"-- No classes available yet for term. If you believe this is an error, contact your IT Department --"
+						);
+						return;
+					}
+
+					resetClassSelect("-- Choose a class --");
+
+					classes.forEach((item) => {
+						const subject = item.subject || "";
+						const courseNumber = item.courseNumber || "";
+						const sequenceNumber = item.sequenceNumber || "";
+						const codeParts = [subject, courseNumber]
+							.filter(Boolean)
+							.join(" ");
+						const section = sequenceNumber
+							? `-${sequenceNumber}`
+							: "";
+						const id =
+							codeParts + section ||
+							item.courseReferenceNumber ||
+							"UNKNOWN";
+
+						const title = item.courseTitle || "Untitled course";
+
+						const opt = document.createElement("option");
+						opt.value = id;
+						opt.textContent = `${id} - ${title}`;
+						classSelect.appendChild(opt);
+					});
+
+					classSelect.disabled = false;
+				} catch (err) {
+					console.error(err);
+					classSelect.disabled = true;
+					resetClassSelect(
+						"-- Error loading classes for this term --"
+					);
+				}
+			});
+
+			classSelect.addEventListener("change", () => {
+				const selectedOption =
+					classSelect.options[classSelect.selectedIndex];
+
+				if (!classSelect.value) {
+					//when no class is selected, disable rating again
+					currentPreference.classId = null;
+					currentPreference.classLabel = null;
+					resetRatingControls();
+					updateSubmitButtonState();
+					return;
+				}
+
+				currentPreference.classId = classSelect.value;
+				currentPreference.classLabel = selectedOption
+					? selectedOption.textContent
+					: null;
+
+				//enable rating and reset any previous choice
+				comfortRatingFieldset.disabled = false;
+				desireRatingFieldset.disabled = false;
+
+				comfortRatingRadios.forEach((r) => {
+					r.checked = false;
+				});
+				desireRatingRadios.forEach((r) => {
+					r.checked = false;
+				});
+
+				currentPreference.comfortRating = null;
+				currentPreference.desireRating = null;
+
+				saveMessage.textContent = "";
+				saveMessage.className = "mt-2 small";
+
+				//stating below radio buttons what was picked for UX benefit
+				comfortRatingSummary.textContent = `You are rating: ${
+					currentPreference.termLabel || currentPreference.termCode
+				} - ${currentPreference.classLabel}`;
+				desireRatingSummary.textContent = `You are rating: ${
+					currentPreference.termLabel || currentPreference.termCode
+				} - ${currentPreference.classLabel}`;
+
+				updateSubmitButtonState();
+			});
+
+			//store comfort rating and update summary text
+			comfortRatingRadios.forEach((radio) => {
+				radio.addEventListener("change", () => {
+					if (!radio.checked) return;
+
+					const ratingValue = Number(radio.value);
+					currentPreference.comfortRating = ratingValue;
+
+					const base = `You are rating: ${
+						currentPreference.termLabel ||
+						currentPreference.termCode
+					} - ${currentPreference.classLabel}`;
+
+					comfortRatingSummary.textContent = `${base}. Current comfort level: ${ratingValue}`;
+					updateSubmitButtonState();
+					saveMessage.textContent = "";
+					saveMessage.className = "mt-2 small";
+				});
+			});
+
+			//store desire rating and update summary text
+			desireRatingRadios.forEach((radio) => {
+				radio.addEventListener("change", () => {
+					if (!radio.checked) return;
+
+					const ratingValue = Number(radio.value);
+					currentPreference.desireRating = ratingValue;
+
+					const base = `You are rating: ${
+						currentPreference.termLabel ||
+						currentPreference.termCode
+					} - ${currentPreference.classLabel}`;
+
+					desireRatingSummary.textContent = `${base}. Current desire level: ${ratingValue}`;
+					updateSubmitButtonState();
+					saveMessage.textContent = "";
+					saveMessage.className = "mt-2 small";
+				});
+			});
+
+			async function submitPreference() {
+				updateFacultyId(); //ensure no bad data, current faculty only
+
+				if (
+					!currentPreference.facultyId ||
+					!currentPreference.termCode ||
+					!currentPreference.classId ||
+					currentPreference.comfortRating === null ||
+					currentPreference.comfortRating === undefined ||
+					currentPreference.desireRating === null ||
+					currentPreference.desireRating === undefined
+				) {
+					saveMessage.className = "mt-2 small text-danger";
+					saveMessage.textContent =
+						"Please fill in Faculty ID, select a term, class, comfort, and desire rating before trying to submit.";
+					return;
+				}
+
+				submitPreferenceBtn.disabled = true;
+				saveMessage.className = "mt-2 small text-muted";
+				saveMessage.textContent = "Saving and submitting preference...";
+
+				//TODO change this and shorten either on front end or back for comfort and desire radios -- quick fix
+				const payload = {
+					facultyId: currentPreference.facultyId,
+					termCode: currentPreference.termCode,
+					termLabel: currentPreference.termLabel,
+					classId: currentPreference.classId,
+					classLabel: currentPreference.classLabel,
+					rating: currentPreference.comfortRating,
+					desireRating: currentPreference.desireRating,
+				};
+
+				try {
+					const response = await fetch("/api/preferences/submit", {
+						method: "POST",
+						headers: {
+							"Content-Type": "application/json",
+						},
+						body: JSON.stringify(payload), //TODO using payload instead of current preference, change with above comment
+					});
+
+					if (!response.ok) {
+						const errBody = await response.json().catch(() => ({}));
+						const msg =
+							errBody.message ||
+							`Server returned status ${response.status}`;
+						throw new Error(msg);
+					}
+
+					const result = await response.json();
+
+					saveMessage.className = "mt-2 small text-success";
+					saveMessage.textContent =
+						result.message ||
+						"Preference saved and submitted successfully.";
+
+					//keep everything so they see what they submitted
+					submitPreferenceBtn.disabled = false;
+				} catch (err) {
+					console.error("Error submitting preference:", err);
+					saveMessage.className = "mt-2 small text-danger";
+					saveMessage.textContent =
+						"Error submitting preference: " + err.message;
+					submitPreferenceBtn.disabled = false;
+				}
+			}
+
+			submitPreferenceBtn.addEventListener("click", (e) => {
+				e.preventDefault();
+				submitPreference();
+			});
+		</script>
+	</body>
+</html>
