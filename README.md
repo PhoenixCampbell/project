@@ -6,17 +6,17 @@ _A full-stack DSU scheduling support system for collecting faculty preferences, 
 
 Faculty–Class Match is a web application built for the Dakota State University Software Engineering course (CSC 470). The system allows:
 
--   **Faculty** to submit course preferences including comfort level & wanting to teach level
--   **Administration** to run an automated solver using Python
--   **The system** to export a solution Excel file for review
+- **Faculty** to submit course preferences including comfort level & wanting to teach level
+- **Administration** to run an automated solver using Python
+- **The system** to export a solution Excel file for review
 
 The project is implemented as a **full-stack application** using:
 
--   **HTML/CSS/Bootstrap** – UI & layout
--   **Vanilla JavaScript** – dynamic behavior
--   **Express.js (Node)** – backend + API routes
--   **Python (solver.py)** – optimization engine
--   **CSV file storage** – faculty preference persistence
+- **HTML/CSS/Bootstrap** – UI & layout
+- **Vanilla JavaScript** – dynamic behavior
+- **Express.js (Node)** – backend + API routes
+- **Python (solver.py)** – optimization engine
+- **CSV file storage** – faculty preference persistence
 
 ---
 
@@ -34,13 +34,13 @@ The project is implemented as a **full-stack application** using:
 
 ### ✔ Delivered in Sprint 1
 
--   Full faculty input workflow
--   Term → Class dynamic lookup
--   Rating system (comfort & desire)
--   CSV storage with auto-append
--   Faculty ID auto-detection
--   Fully validated submit workflow
--   Express server setup
+- Full faculty input workflow
+- Term → Class dynamic lookup
+- Rating system (comfort & desire)
+- CSV storage with auto-append
+- Faculty ID auto-detection
+- Fully validated submit workflow
+- Express server setup
 
 ---
 
@@ -56,12 +56,12 @@ The project is implemented as a **full-stack application** using:
 
 ### ✔ Completed so far
 
--   Admin UI created (`admin.html`)
--   Run Solver button
--   `/api/admin/solve` backend route
--   Python execution via `child_process.spawn()`
--   Graceful handling for missing solver.py
--   Placeholder for `solution.xlsx`
+- Admin UI created (`admin.html`)
+- Run Solver button
+- `/api/admin/solve` backend route
+- Python execution via `child_process.spawn()`
+- Graceful handling for missing solver.py
+- Placeholder for `solution.xlsx`
 
 ---
 
@@ -92,13 +92,13 @@ Submit a single faculty preference.
 
 ```json
 {
-	"facultyId": "john.doe",
-	"termCode": "202580",
-	"termLabel": "Fall 2025",
-	"classId": "CSC210-D01",
-	"classLabel": "Principles of Accounting I",
-	"rating": 4,
-	"desireRating": 3
+  "facultyId": "john.doe",
+  "termCode": "202580",
+  "termLabel": "Fall 2025",
+  "classId": "CSC210-D01",
+  "classLabel": "Principles of Accounting I",
+  "rating": 4,
+  "desireRating": 3
 }
 ```
 
@@ -110,8 +110,8 @@ Runs the Python solver.
 
 ```json
 {
-	"success": true,
-	"message": "Solver completed and solution.xlsx was generated."
+  "success": true,
+  "message": "Solver completed and solution.xlsx was generated."
 }
 ```
 
@@ -119,8 +119,8 @@ Runs the Python solver.
 
 ```json
 {
-	"success": false,
-	"message": "Solver script not found"
+  "success": false,
+  "message": "Solver script not found"
 }
 ```
 
@@ -170,27 +170,64 @@ http://localhost:3000/admin.html
 
 ### Sprint 3 — Admin Tools
 
--   Export aggregated faculty preferences
--   Conflict detection
--   Searchable/class-filter view
+- Export aggregated faculty preferences
+- Conflict detection
+- Searchable/class-filter view
 
 ### Sprint 4 — Deployment
 
--   Hosting on bim.inclass.today
--   SSL + production express config
--   Production logs
--   Final UI polish
+- Hosting on bim.inclass.today
+- SSL + production express config
+- Production logs
+- Final UI polish
 
 ---
 
 # 🤝 Contributing
 
 1. Branch using:
-    ```
-    feature/<story-id>-<description>
-    ```
+   ```
+   feature/<story-id>-<description>
+   ```
 2. Run ESLint
 3. Submit PR to `main`
+
+---
+
+# 📝 Testing
+1. For Python testing run:
+    - ```python -m venv match-venv```
+    - ```source match-venv/bin/activate```
+    - ```pip install pytest```
+    - ```pip install pytest-cov```
+    - For python unit tests ran individually: ```pytest -vv tests/{file_name}.py```
+        - For example: ```pytest -vv tests/test_preferences.py```
+    - For a coverage report: ```pytest --cov={file_name} tests/ --cov-report=html```
+        - For example: ```pytest --cov=preferences tests/ --cov-report=html``` and multiple ```--cov=...``` can be added to createa coverage report for many files at once
+    - Deactivate the virtual environment with: ```deactivate```
+    - The coverage report will be created in ```htmlcov/```
+2. For javascript testing:
+    - Update packages: ```npm install```
+    - Run: ```npm test```
+    - A report will be created in ```coverage/lcov-report/```
+
+---
+
+# 🐋 Docker
+1. To install docker on your machine (Ubuntu):
+    - ```sudo apt install docker.io```
+    - ```sudo apt install docker-compose```
+2. For building project and running and in a docker container:
+    - ```sudo docker compose build```
+      - If that doesn't work or gives an error about group permissions:
+        - ```sudo usermod -aG docker $USER```
+        - ``` newgrp docker```
+        - ```docker-compose build```
+    - Get the docker Image ID using: ```docker images```
+    - Run the docker container with:
+      ```docker run -p 3000:3000 <Image ID>```
+      - Add ```-d``` after the ports if you want to run detached
+    - Check that the Docker container is running with: ```docker ps```
 
 ---
 

@@ -1,13 +1,19 @@
 {
   "name": "projects-faculty2class_match",
   "version": "1.0.0",
-  "description": "A lightweight **Bootstrap 5** web application built by Dakota State University’s CSC 470 Software Engineering team.  \r The goal is to provide a simple, intuitive interface where **faculty can rate their course preferences** (0–4) and administrators can later process those preferences with a scheduling solver.",
+  "description": "A lightweight **Bootstrap 5** web application built by Dakota State University’s CSC 470 Software Engineering team. Faculty can rate their course preferences (0–4) and administrators can process those preferences with a scheduling solver.",
   "main": "script.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest",
     "lint": "eslint './**/*.{js,json}' --ignore-path .eslintignore",
     "lint:fix": "eslint './**/*.{js,json}' --fix --ignore-path .eslintignore"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "collectCoverage": true,
+    "coverageDirectory": "coverage",
+    "coverageReporters": ["text", "lcov"]
   },
   "keywords": [],
   "author": "",
@@ -26,6 +32,9 @@
     "eslint-plugin-n": "^16.0.0",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^6.0.0",
-    "jsonc-eslint-parser": "^2.4.1"
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "jsonc-eslint-parser": "^2.4.1",
+    "supertest": "^6.3.3"
   }
 }

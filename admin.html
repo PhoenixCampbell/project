@@ -59,40 +59,96 @@
 				preferences and generate the excel results file.
 			</p>
 
+			<div class="card mb-4">
+				<div class="card-body">
+					<h2 class="h5">Tenure Assignment</h2>
+					<p class="small text-muted mb-3">
+						Before running the solver, assign tenure (years at DSU)
+						for all faculty that have submitted preferences.
+					</p>
+					<div class="row g-2 align-items-end">
+						<div class="col-md-5">
+							<label for="tenureFacultySelect" class="form-label"
+								>Faculty</label
+							>
+							<select
+								id="tenureFacultySelect"
+								class="form-select"
+							>
+								<option value="">
+									Select a faculty member
+								</option>
+							</select>
+						</div>
+						<div class="col-md-3">
+							<label for="tenureInput" class="form-label"
+								>Tenure (years)</label
+							>
+							<input
+								id="tenureInput"
+								type="number"
+								min="0"
+								class="form-control"
+							/>
+						</div>
+						<div class="col-md-2">
+							<button
+								id="saveTenureBtn"
+								class="btn btn-secondary w-100"
+							>
+								Save Tenure
+							</button>
+						</div>
+					</div>
+					<div id="tenureStatus" class="mt-3 small text-muted"></div>
+				</div>
+			</div>
+
 			<div class="card">
 				<div class="card-body">
 					<h2 class="h5">Solver Control</h2>
 					<p class="small text-muted mb-3">
 						when the button is clicked below, the server will run
 						the Python solver script and write the solution Excel
-						file -> <code>solver.py</code> and write the solution
-						excel file.
+						file ->
+						<code>solver.py</code> and write the solution excel
+						file.
 					</p>
-
+					<div>
+						<label for="termCodeInput"
+							>Term code to solve (eg, 202510 for Spring
+							2025):</label
+						>
+						<input
+							id="termCodeInput"
+							type="text"
+							placeholder="202510"
+						/>
+					</div>
 					<button id="runSolverBtn" class="btn btn-primary">
 						Run Solver
 					</button>
 
 					<div id="solverStatus" class="mt-3 small"></div>
+					<div
+						id="solutionDownloadSection"
+						class="mt-4"
+						style="display: none"
+					>
+						<button
+							id="downloadSolutionBtn"
+							class="btn btn-outline-secondary"
+						>
+							Download solution.xlsx
+						</button>
+						<div
+							id="solutionDownloadStatus"
+							class="mt-2 small text-muted"
+						></div>
+					</div>
 				</div>
 			</div>
 		</main>
-		<main class="container my-4">
-			<h4>Download Instructor Preferences</h4>
-			<select id="people" style="min-width: 10vw">
-				<option value="ALL">ALL</option>
-				<!-- Always at top -->
-			</select>
-
-			<button
-				id="downloadBtn"
-				class="btn btn-primary"
-				style="margin-left: 2vh"
-			>
-				Download
-			</button>
-		</main>
-
 		<!-- Footer (shared across pages)-->
 		<footer
 			class="text-center text-muted small py-3 bg-body-tertiary border-top"
@@ -109,7 +165,159 @@
 			const runSolverBtn = document.getElementById("runSolverBtn");
 			const solverStatus = document.getElementById("solverStatus");
 
+			const tenureSelect = document.getElementById("tenureFacultySelect");
+			const tenureInput = document.getElementById("tenureInput");
+			const saveTenureBtn = document.getElementById("saveTenureBtn");
+			const tenureStatus = document.getElementById("tenureStatus");
+
+			const solutionDownloadSection = document.getElementById(
+				"solutionDownloadSection"
+			);
+			const downloadSolutionBtn = document.getElementById(
+				"downloadSolutionBtn"
+			);
+			const solutionDownloadStatus = document.getElementById(
+				"solutionDownloadStatus"
+			);
+
+			let allTenureAssigned = false;
+
+			async function loadTenureData() {
+				tenureSelect.innerHTML =
+					'<option value="">Select a faculty member...</option>';
+
+				try {
+					const res = await fetch("/api/admin/tenure/list");
+
+					const items = await res.json();
+
+					allTenureAssigned =
+						items.length > 0 &&
+						items.every((i) => i.tenure != null);
+
+					for (const item of items) {
+						const opt = document.createElement("option");
+						opt.value = item.facultyKey;
+						opt.textContent =
+							item.displayName +
+							(item.tenure != null
+								? ` (tenure: ${item.tenure})`
+								: " (no tenure set)");
+						tenureSelect.appendChild(opt);
+					}
+
+					if (!items.length) {
+						tenureStatus.textContent =
+							"No faculty preferences found yet. Tenure assignment will appear here once preferences are submitted.";
+					} else if (!allTenureAssigned) {
+						tenureStatus.textContent =
+							"Some faculty are missing tenure. Please assign tenure before running the solver.";
+					} else {
+						tenureStatus.textContent =
+							"Tenure is assigned for all faculty who have submitted preferences.";
+					}
+
+					runSolverBtn.disabled = !allTenureAssigned;
+				} catch (err) {
+					console.error("Error loading tenure data:", err);
+					tenureStatus.textContent =
+						"Error loading tenure data. See console/server logs.";
+				}
+			}
+
+			async function saveTenure() {
+				const facultyKey = tenureSelect.value;
+				const tenureVal = tenureInput.value.trim();
+
+				if (!facultyKey) {
+					tenureStatus.textContent =
+						"Please select a faculty member.";
+					return;
+				}
+				if (!tenureVal) {
+					tenureStatus.textContent = "Please enter a tenure (years).";
+					return;
+				}
+
+				try {
+					const res = await fetch("/api/admin/tenure/save", {
+						method: "POST",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify({ facultyKey, tenure: tenureVal }),
+					});
+
+					if (!res.ok) {
+						const text = await res.text();
+						console.error("Tenure save failed:", text);
+						tenureStatus.textContent =
+							"Server error while saving tenure. Check server logs.";
+						return;
+					}
+
+					const data = await res.json();
+
+					if (data.success) {
+						tenureStatus.textContent =
+							"Tenure saved. Reloading list...";
+						tenureInput.value = "";
+						await loadTenureData();
+					} else {
+						tenureStatus.textContent =
+							data.message || "Error saving tenure. See logs.";
+					}
+				} catch (err) {
+					console.error("Error saving tenure:", err);
+					tenureStatus.textContent =
+						"Error saving tenure. See console/server logs.";
+				}
+			}
+
+			async function refreshSolutionStatus() {
+				try {
+					const res = await fetch("/api/admin/solution/status");
+					if (!res.ok) {
+						solutionDownloadSection.style.display = "none";
+						return;
+					}
+					const data = await res.json();
+					if (data.exists) {
+						solutionDownloadSection.style.display = "block";
+						solutionDownloadStatus.textContent =
+							"Latest solution.xlsx is ready for download";
+					} else {
+						solutionDownloadSection.style.display = "none";
+						solutionDownloadStatus.textContent = "";
+					}
+				} catch (err) {
+					console.error("Error checking solution status:", err);
+					solutionDownloadSection.style.display = "none";
+				}
+			}
+
+			function downloadSolution() {
+				solutionDownloadStatus.textContent = "Starting download...";
+				window.loaction.href = "/api/admin/solution/download";
+			}
+
 			async function runSolver() {
+				if (!allTenureAssigned) {
+					solverStatus.className = "mt-3 small text-danger";
+					solverStatus.textContent =
+						"Cannot run solver. Please assign tenure for all faculty first";
+					return;
+				}
+
+				const termCode = document
+					.getElementById("termCodeInput")
+					.value.trim();
+
+				if (!termCode) {
+					solverStatus.textContent =
+						"Please enter a term code (eg, 202510) before solving";
+					solverStatus.className = "mt-3 small text-danger";
+					return;
+				}
+
 				solverStatus.className = "mt-3 small text-muted";
 				solverStatus.textContent =
 					"Running solver... it'll be a sec...";
@@ -118,90 +326,40 @@
 				try {
 					const response = await fetch("/api/admin/solve", {
 						method: "POST",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify({ termCode }),
 					});
 
-					const data = await response.json().catch(() => ({}));
+					const data = await response.json();
 
-					if (!response.ok || data.success === false) {
-						const msg =
+					if (data.success) {
+						solverStatus.className = "mt-3 small text-success";
+						solverStatus.textContent =
+							data.message || "Solver completed successfully";
+						await refreshSolutionStatus();
+					} else {
+						solverStatus.className = "mt-3 small text-danger";
+						solverStatus.textContent =
 							data.message ||
-							`Server returned status ${response.status}`;
-						throw new Error(msg);
+							"Solver reported a problem. Check server logs.";
 					}
-
-					solverStatus.className = "mt-3 small text-success";
-					solverStatus.textContent =
-						data.message ||
-						"Solver finished successfuly and Excel file was generated.";
 				} catch (err) {
-					console.error("Error running solver:", err);
+					console.error("Error calling solver:", err);
 					solverStatus.className = "mt-3 small text-danger";
 					solverStatus.textContent =
-						"Error running solver: " +
-						(err.message || "Unknown error");
+						"Error calling solver. See console/server logs.";
 				} finally {
 					runSolverBtn.disabled = false;
 				}
 			}
 
-			runSolverBtn.addEventListener("click", (e) => {
-				e.preventDefault();
-				runSolver();
-			});
-		</script>
-		<script>
-			const select = document.getElementById("people");
-			const downloadBtn = document.getElementById("downloadBtn");
+			runSolverBtn.addEventListener("click", runSolver);
+			saveTenureBtn.addEventListener("click", saveTenure);
+			downloadSolutionBtn.addEventListener("click", downloadSolution);
 
-			// Load names from backend
-			fetch("/getNames")
-				.then((res) => res.json())
-				.then((names) => {
-					names.forEach((name) => {
-						const option = document.createElement("option");
-						option.value = name;
-						option.textContent = name;
-						select.appendChild(option);
-					});
-				})
-				.catch((err) => console.error("Error loading names:", err));
-
-			// Download logic for any selected value
-			downloadBtn.addEventListener("click", () => {
-				const selected = select.value;
-
-				if (!selected) {
-					alert("Please select a name.");
-					return;
-				}
-
-				// Fetch the file data from backend
-				fetch("/downloadFile", {
-					method: "POST",
-					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({ name: selected }), // pass name or "ALL"
-				})
-					.then((res) => {
-						if (!res.ok) throw new Error("Download failed");
-						return res.blob(); // get the exact file returned
-					})
-					.then((blob) => {
-						const url = window.URL.createObjectURL(blob);
-						const link = document.createElement("a");
-						link.href = url;
-
-						// Keep a reasonable filename
-						const filename = `${selected.replace(/\s+/g, "_")}.csv`;
-						link.download = filename;
-
-						document.body.appendChild(link);
-						link.click();
-						link.remove();
-					})
-					.catch((err) =>
-						alert("Error downloading file: " + err.message)
-					);
-			});
+			//initial load of tenure
+			loadTenureData();
+			refreshSolutionStatus();
 		</script>
 	</body>
 </html>

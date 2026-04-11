@@ -11,7 +11,7 @@ dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const app = express();
+export const app = express();
 const PORT = process.env.PORT || 3000;
 
 const clientId = process.env.CLIENT_ID;
@@ -23,7 +23,14 @@ const tenant = "common";
 app.use(express.json());
 app.use(express.static(__dirname));
 
-const dataDir = path.join(__dirname, "data");
+const dataDir = path.join(__dirname, process.env.DATA_DIR || "data");
+
+if (process.env.NODE_ENV !== "test") {
+	app.listen(PORT, () => {
+		console.log(`Server running → http://localhost:${PORT}`);
+	});
+}
+const tenureFilePath = path.join(dataDir, "tenure.csv");
 
 if (!fs.existsSync(dataDir)) {
 	fs.mkdirSync(dataDir);
@@ -55,7 +62,7 @@ app.get("/faculty", (req, res) => {
 	res.sendFile(path.join(__dirname, "faculty.html"));
 });
 
-function runSolverScript() {
+function runSolverScript(termCode) {
 	return new Promise((resolve, reject) => {
 		const solverPath = path.join(__dirname, "solver.py");
 
@@ -70,7 +77,12 @@ function runSolverScript() {
 		//change "python3" to "python" or vice versa if needed for environment
 		const pythonCMD = process.env.PYTHON || "python";
 
-		const proc = spawn(pythonCMD, [solverPath], {
+		const args = [solverPath];
+		if (termCode) {
+			args.push(termCode);
+		}
+
+		const proc = spawn(pythonCMD, args, {
 			cwd: __dirname,
 		});
 
@@ -78,7 +90,7 @@ function runSolverScript() {
 		let stderr = "";
 
 		proc.stdout.on("data", (chunk) => {
-			stdout.out += chunk.toString();
+			stdout += chunk.toString();
 		});
 
 		proc.stderr.on("data", (chunk) => {
@@ -197,6 +209,65 @@ function appendSubmittedPreference(pref) {
 	fs.writeFileSync(filePath, output, "utf8");
 }
 
+function loadTenureMap() {
+	const map = {};
+	if (!fs.existsSync(tenureFilePath)) return map;
+
+	const raw = fs.readFileSync(tenureFilePath, "utf8");
+	const lines = raw.split(/\r?\n/).filter((l) => l.trim().length > 0);
+
+	for (let i = 1; i < lines.length; i++) {
+		const [facultyKey, tenureStr] = lines[i].split(",");
+		if (!facultyKey) continue;
+		const t = parseInt(tenureStr, 10);
+		if (!Number.isNaN(t)) {
+			map[facultyKey] = t;
+		}
+	}
+	return map;
+}
+
+function saveTenureMap(map) {
+	const header = "facultyKey,tenure";
+	const lines = [header];
+	for (const [key, tenure] of Object.entries(map)) {
+		lines.push(`${key},${tenure}`);
+	}
+	fs.writeFileSync(tenureFilePath, lines.join("\n") + "\n", "utf8");
+}
+
+function getFacultyKeysFromPrefs(termCode = null) {
+	const files = fs
+		.readdirSync(dataDir)
+		.filter((f) => f.startsWith("pref_") && f.endsWith(".csv"));
+	const keys = new Set();
+
+	for (const filename of files) {
+		const stem = filename.replace(".csv", "");
+		const withoutPrefix = stem.substring(5);
+		const parts = withoutPrefix.split("_");
+		if (parts.length < 2) continue;
+
+		const fileTerm = parts[parts.length - 1];
+		if (termCode && fileTerm !== String(termCode)) continue;
+
+		const facultyKey = parts.slice(0, parts.length - 1).join("_");
+		keys.add(facultyKey);
+	}
+
+	return Array.from(keys);
+}
+
+function displayNameFromFacultyKey(facultyKey) {
+	const parts = facultyKey.split("_");
+	const dsuIndex = parts.indexOf("dsu");
+	const nameParts = dsuIndex > 0 ? parts.slice(0, dsuIndex) : parts;
+
+	return nameParts
+		.map((p) => p.charAt(0).toUpperCase() + p.slice(1).toLowerCase())
+		.join(" ");
+}
+
 app.post("/api/preferences/submit", (req, res) => {
 	const body = req.body || {};
 	const {
@@ -252,10 +323,106 @@ app.post("/api/preferences/submit", (req, res) => {
 		});
 	}
 });
+
+app.get("/getNames", (req, res) => {
+	fs.readdir(dataDir, (err, files) => {
+		if (err) {
+			return res
+				.status(500)
+				.json({ error: "Could not read data directory" });
+		}
+
+		// Only .csv files
+		const csvFiles = files.filter((f) => f.endsWith(".csv"));
+
+		const names = csvFiles.map((filename) => {
+			const raw = filename.replace(".csv", "");
+
+			// Split by underscores
+			const parts = raw.split("_");
+			// Expected pattern:
+			// pref_<first>_<last...>_dsu_edu_<date>
+
+			// Find "dsu" which marks the end of the name section
+			const dsuIndex = parts.indexOf("dsu");
+
+			// Name is everything from index 1 up to "dsu"
+			// Example: ["pref","phoenix","campbell","dsu","edu","202510"]
+			let nameParts;
+
+			if (dsuIndex > 1) {
+				nameParts = parts.slice(1, dsuIndex); // Could be ["mary","ann","smith"]
+			} else {
+				// Fallback: just use everything except pref and date
+				nameParts = parts.slice(1, parts.length - 1);
+			}
+
+			// Capitalize each part
+			const formattedName = nameParts
+				.map(
+					(part) =>
+						part.charAt(0).toUpperCase() +
+						part.slice(1).toLowerCase()
+				)
+				.join(" ");
+
+			return formattedName;
+		});
+
+		// Remove duplicates and sort alphabetically
+		const uniqueSortedNames = [...new Set(names)].sort((a, b) =>
+			a.localeCompare(b)
+		);
+
+		res.json(uniqueSortedNames);
+	});
+});
+
+app.get("/api/admin/tenure/list", (req, res) => {
+	try {
+		const tenureMap = loadTenureMap();
+		const facultyKeys = getFacultyKeysFromPrefs();
+
+		const items = facultyKeys.map((key) => ({
+			facultyKey: key,
+			displayName: displayNameFromFacultyKey(key),
+			tenure: tenureMap[key] ?? null,
+		}));
+
+		items.sort((a, b) => a.displayName.localeCompare(b.displayName));
+
+		res.json(items);
+	} catch (err) {
+		console.error("Error listing tenure:", err);
+		res.status(500).json({ error: "Failed to list tenure data" });
+	}
+});
+
 // prettier-ignore
 app.post("/api/admin/solve", async(req, res) => {
 	try {
-		const result = await runSolverScript();
+        const { termCode } = req.body || {};
+
+        if (!termCode) {
+            return res.status(400).json({
+                success: false,
+                message: "termCode is required to run solver",
+            });
+        }
+
+        const tenureMap = loadTenureMap();
+        const facultyKeys = getFacultyKeysFromPrefs(termCode);
+        const missing = facultyKeys.filter((k) => tenureMap[k] == null);
+
+        if (missing.length > 0) {
+            const name = missing.map(displayNameFromFacultyKey);
+            return res.status(400).json({
+                success: false,
+                message: "Connot run solver. Tenure must be assigned for: " + names.join(", "),
+            });
+        }
+
+        const result = await runSolverScript(termCode);
 
 		//make sure the file actually exists
 		const solutionExists = fs.existsSync(solutionFilePath);
@@ -263,8 +430,8 @@ app.post("/api/admin/solve", async(req, res) => {
 		return res.json({
 			success: true,
 			message: solutionExists
-				? "Solver completed and solution.xlsx was generated."
-				: "Solver completed, but solution.xlsx was not found. Check solver script output.",
+				? `Solver completed and solution.xlsx was generated for term ${termCode}.`
+				: `Solver completed for term ${termCode}, but solution.xlsx was not found. Check solver script output.`,
 			stdout: result.stdout,
 			stderr: result.stderr,
 		});
@@ -276,6 +443,21 @@ app.post("/api/admin/solve", async(req, res) => {
 		});
 	}
 });
+
+app.get("/api/admin/solution/status", (req, res) => {
+	const exists = fs.existsSync(solutionFilePath);
+	return res.json({ exists });
+});
+
+app.get("api/admin/solution/download", (req, res) => {
+	if (!fs.existsSync(solutionFilePath)) {
+		return res
+			.status(404)
+			.send("solution.xlsx not found. Run the solver first.");
+	}
+	res.download(solutionFilePath, "solution.xlsx");
+});
+
 // prettier-ignore
 app.get("/auth/callback", async(req, res) => {
 	const code = req.query.code;
@@ -299,87 +481,66 @@ app.get("/auth/callback", async(req, res) => {
 	res.send(tokenData);
 });
 
-app.get("/getNames", (req, res) => {
-  fs.readdir(dataDir, (err, files) => {
-    if (err) {
-      return res.status(500).json({ error: "Could not read data directory" });
-    }
+app.post("/api/admin/tenure/save", (req, res) => {
+	const { facultyKey, tenure } = req.body || {};
+	if (!facultyKey) {
+		return res
+			.status(400)
+			.json({ success: false, message: "facultyKey is required" });
+	}
+	const tNum = parseInt(tenure, 10);
+	if (Number.isNaN(tNum) || tNum < 0) {
+		return res.status(400).json({
+			success: false,
+			message: "Tenure must be a non-negitive integer.",
+		});
+	}
 
-    // Only .csv files
-    const csvFiles = files.filter(f => f.endsWith(".csv"));
-
-    const names = csvFiles.map(filename => {
-      const raw = filename.replace(".csv", "");
-
-      // Split by underscores
-      const parts = raw.split("_");
-      // Expected pattern:
-      // pref_<first>_<last...>_dsu_edu_<date>
-
-      // Find "dsu" which marks the end of the name section
-      const dsuIndex = parts.indexOf("dsu");
-
-      // Name is everything from index 1 up to "dsu"
-      // Example: ["pref","phoenix","campbell","dsu","edu","202510"]
-      let nameParts;
-
-      if (dsuIndex > 1) {
-        nameParts = parts.slice(1, dsuIndex); // Could be ["mary","ann","smith"]
-      } else {
-        // Fallback: just use everything except pref and date
-        nameParts = parts.slice(1, parts.length - 1);
-      }
-
-      // Capitalize each part
-      const formattedName = nameParts
-        .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
-        .join(" ");
-
-      return formattedName;
-    });
-
-    // Remove duplicates and sort alphabetically
-    const uniqueSortedNames = [...new Set(names)].sort((a, b) =>
-      a.localeCompare(b)
-    );
-
-    res.json(uniqueSortedNames);
-  });
+	try {
+		const tenureMap = loadTenureMap();
+		tenureMap[facultyKey] = tNum;
+		saveTenureMap(tenureMap);
+		return res.json({ success: true, message: "Tenure saved" });
+	} catch (err) {
+		console.error("Error saving tenure:", err);
+		return res.status(500).json({
+			success: false,
+			message: "Server error while saving tenure",
+		});
+	}
 });
 
 // POST endpoint that calls Python
 app.post("/downloadFile", (req, res) => {
-  const { name } = req.body;
-  if (!name) return res.status(400).send("Name not provided");
+	const { name } = req.body;
+	if (!name) return res.status(400).send("Name not provided");
 
-  // Call Python script with the name as an argument
-  const py = spawn("python3", ["preferences.py", name]);
+	// Call Python script with the name as an argument
+	const py = spawn("python3", ["preferences.py", name]);
 
-  let output = "";
-  let errorOutput = "";
+	let output = "";
+	let errorOutput = "";
 
-  py.stdout.on("data", (data) => {
-    output += data.toString();
-  });
+	py.stdout.on("data", (data) => {
+		output += data.toString();
+	});
 
-  py.stderr.on("data", (data) => {
-    errorOutput += data.toString();
-  });
+	py.stderr.on("data", (data) => {
+		errorOutput += data.toString();
+	});
 
-  py.on("close", (code) => {
-    if (code !== 0) {
-      console.error("Python error:", errorOutput);
-      return res.status(500).send("Python script error");
-    }
+	py.on("close", (code) => {
+		if (code !== 0) {
+			console.error("Python error:", errorOutput);
+			return res.status(500).send("Python script error");
+		}
 
-    // Use Python output as file content
-    res.setHeader("Content-Disposition", `attachment; filename="${name}_file.txt"`);
-    res.setHeader("Content-Type", "text/plain");
-    res.send(output);
-  });
-});
-
-
-app.listen(PORT, () => {
-	console.log(`Server running → http://localhost:${PORT}`);
+		// Use Python output as file content
+		res.setHeader(
+			"Content-Disposition",
+			`attachment; filename="${name}_file.txt"`
+		);
+		res.setHeader("Content-Type", "text/plain");
+		res.send(output);
+	});
 });
